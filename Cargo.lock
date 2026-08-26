@@ -361,7 +361,7 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
 name = "linfs-block"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "crc32fast",
@@ -372,7 +372,7 @@ dependencies = [
 
 [[package]]
 name = "linfs-chroot"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "linfs-core",
  "linfs-fs",
@@ -380,7 +380,7 @@ dependencies = [
 
 [[package]]
 name = "linfs-cli"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -394,14 +394,14 @@ dependencies = [
 
 [[package]]
 name = "linfs-core"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "linfs-fs"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "crc32fast",
  "linfs-block",
@@ -410,7 +410,7 @@ dependencies = [
 
 [[package]]
 name = "linfs-gui"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "linfs-core",
@@ -419,7 +419,7 @@ dependencies = [
 
 [[package]]
 name = "linfs-mount"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -433,7 +433,7 @@ dependencies = [
 
 [[package]]
 name = "linfs-terminal"
-version = "0.200.0"
+version = "1.0.0"
 dependencies = [
  "linfs-core",
  "tokio",

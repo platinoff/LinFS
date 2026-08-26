@@ -4,7 +4,7 @@ members = ["crates/linfs-core", "crates/linfs-block", "crates/linfs-fs", "crates
 
 [workspace.package]
 edition = "2021"
-version = "0.200.0"
+version = "1.0.0"
 license = "MIT"
 repository = "https://github.com/platinoff/LinFS"
 keywords = ["filesystem", "ext4", "btrfs", "windows", "chroot"]
