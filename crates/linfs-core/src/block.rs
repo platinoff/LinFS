@@ -4,6 +4,9 @@ pub trait Block: Send + Sync {
     fn read_at(&self, off: u64, buf: &mut [u8]) -> std::io::Result<()>;
     fn write_at(&self, off: u64, buf: &[u8]) -> std::io::Result<()>;
     fn len(&self) -> u64;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn sector_size(&self) -> u32 {
         512
     }

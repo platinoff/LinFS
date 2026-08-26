@@ -52,7 +52,7 @@ fn make_image_with_root_dir() -> Vec<u8> {
     // Inode table at block 5 (20480)
     let itable = 5 * bs as usize;
     // inode 2 (root) at index 1: offset 1*256
-    let ino2_off = itable + 1 * 256;
+    let ino2_off = itable + 256;
     data[ino2_off..ino2_off + 2].copy_from_slice(&0x41EDu16.to_le_bytes()); // dir 0777
     data[ino2_off + 26..ino2_off + 28].copy_from_slice(&2u16.to_le_bytes()); // links 2
     data[ino2_off + 4..ino2_off + 8].copy_from_slice(&4096u32.to_le_bytes()); // size

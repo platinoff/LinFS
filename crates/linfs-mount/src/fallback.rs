@@ -45,7 +45,7 @@ pub async fn serve(fs: Arc<dyn linfs_core::fs::FileSystem>, addr: &str) -> linfs
     })?;
     axum::serve(listener, app)
         .await
-        .map_err(|e| linfs_core::Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| linfs_core::Error::Io(std::io::Error::other(e)))?;
     Ok(())
 }
 

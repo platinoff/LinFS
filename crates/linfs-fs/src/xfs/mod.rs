@@ -12,6 +12,7 @@ pub struct Superblock {
 }
 
 pub struct XfsFs {
+    #[allow(dead_code)]
     block: Arc<dyn Block>,
     sb: Superblock,
 }

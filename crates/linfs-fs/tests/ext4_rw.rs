@@ -67,7 +67,7 @@ fn make_image_with_journal_flag(needs_recovery: bool) -> Vec<u8> {
     data[gdt_off + 4..gdt_off + 8].copy_from_slice(&4u32.to_le_bytes());
     data[gdt_off + 8..gdt_off + 12].copy_from_slice(&5u32.to_le_bytes());
     let itable = 5 * bs as usize;
-    let ino2_off = itable + 1 * 256;
+    let ino2_off = itable + 256;
     data[ino2_off..ino2_off + 2].copy_from_slice(&0x41EDu16.to_le_bytes());
     data[ino2_off + 26..ino2_off + 28].copy_from_slice(&2u16.to_le_bytes());
     data[ino2_off + 4..ino2_off + 8].copy_from_slice(&4096u32.to_le_bytes());

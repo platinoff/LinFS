@@ -15,6 +15,7 @@ pub struct Superblock {
 }
 
 pub struct BtrfsFs {
+    #[allow(dead_code)]
     block: Arc<dyn Block>,
     sb: Superblock,
 }

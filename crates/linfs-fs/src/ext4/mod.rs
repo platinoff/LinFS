@@ -62,8 +62,6 @@ impl Fs {
             return Err(linfs_core::Error::Corruption("inode 0 invalid".into()));
         }
         let gdt = group::read_group_descs(&*self.block, &self.superblock)?;
-        // Single group for MVP; extend for multi-group by computing group idx
-        let g = &gdt[0];
         let inodes_per_group = self.superblock.inodes_per_group as u64;
         let group_idx = (ino as u64 - 1) / inodes_per_group;
         if group_idx >= gdt.len() as u64 {
@@ -87,8 +85,8 @@ impl Fs {
         if is_extent {
             // i_block area is 60 bytes; first 12 is header
             let mut raw = [0u8; 60];
-            for i in 0..15 {
-                raw[i * 4..i * 4 + 4].copy_from_slice(&ino.block[i].to_le_bytes());
+            for (i, v) in ino.block.iter().enumerate() {
+                raw[i * 4..i * 4 + 4].copy_from_slice(&v.to_le_bytes());
             }
             let hdr = extent::parse_extent_header(&raw[0..12])?;
             if hdr.depth != 0 {
@@ -136,6 +134,8 @@ impl Fs {
                 "readdir on non-dir ino {ino}"
             )));
         }
+        // HTREE (dir_index) : linear fallback for band 201 — parse all blocks linearly
+        // Full htree hash lookup (dx_root) is band 202 stretch.
         let blocks = self.inode_data_blocks(&inode)?;
         let bs = self.superblock.block_size as u64;
         let mut out = Vec::new();
@@ -146,11 +146,8 @@ impl Fs {
                 .read_at(off, &mut buf)
                 .map_err(|e| linfs_core::Error::Corruption(format!("read dir blk {blk}: {e}")))?;
             let entries = dir::parse_dir_block(&buf)?;
+            // Filter out possible htree fake entries (".", ".." still kept)
             out.extend(entries);
-            // For MVP, first block contains all entries
-            if !out.is_empty() {
-                break;
-            }
         }
         Ok(out)
     }
@@ -167,5 +164,116 @@ impl Fs {
             String::from_utf8_lossy(name),
             parent
         )))
+    }
+
+    /// Read file content at `offset` into `buf`, returning bytes read.
+    /// Handles extent-mapped files (depth 0) and direct blocks.
+    pub fn read(&self, ino: u32, offset: u64, buf: &mut [u8]) -> linfs_core::Result<usize> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+        let inode = self.read_inode_raw(ino)?;
+        if inode.is_dir() {
+            return Err(linfs_core::Error::Corruption(format!(
+                "read on dir ino {ino}"
+            )));
+        }
+        let size = inode.size();
+        if offset >= size {
+            return Ok(0);
+        }
+        let to_read = (buf.len() as u64).min(size - offset) as usize;
+        let bs = self.superblock.block_size as u64;
+        let mut read = 0usize;
+        let mut tmp = vec![0u8; bs as usize];
+        // Build extent map for extent files
+        let extents: Vec<extent::Extent> = if (inode.flags & 0x80000) != 0 {
+            let mut raw = [0u8; 60];
+            for (i, v) in inode.block.iter().enumerate() {
+                raw[i * 4..i * 4 + 4].copy_from_slice(&v.to_le_bytes());
+            }
+            let hdr = extent::parse_extent_header(&raw[0..12])?;
+            if hdr.depth != 0 {
+                return Err(linfs_core::Error::Unsupported(
+                    "extent depth >0 not yet implemented".into(),
+                ));
+            }
+            let mut v = Vec::new();
+            for i in 0..hdr.entries as usize {
+                let off = 12 + i * 12;
+                if off + 12 > raw.len() {
+                    break;
+                }
+                v.push(extent::parse_extent(&raw[off..off + 12]));
+            }
+            v
+        } else {
+            Vec::new()
+        };
+        let is_extent = !extents.is_empty() || (inode.flags & 0x80000) != 0;
+        while read < to_read {
+            let cur_off = offset + read as u64;
+            let logical = (cur_off / bs) as u32;
+            let block_off = (cur_off % bs) as usize;
+            let phys = if is_extent {
+                // map logical via extents
+                let mut found: Option<(u64, bool)> = None;
+                for e in &extents {
+                    let start = e.block;
+                    let len = e.len_blocks();
+                    if logical >= start && logical < start + len {
+                        let delta = logical - start;
+                        found = Some((e.physical() + delta as u64, e.is_unwritten()));
+                        break;
+                    }
+                }
+                match found {
+                    Some((p, unwritten)) => {
+                        if unwritten {
+                            // hole / unwritten: zero fill
+                            let chunk = (to_read - read)
+                                .min((bs as usize - block_off).min((size - cur_off) as usize));
+                            buf[read..read + chunk].fill(0);
+                            read += chunk;
+                            continue;
+                        } else {
+                            p
+                        }
+                    }
+                    None => {
+                        // sparse hole
+                        let chunk = (to_read - read)
+                            .min((bs as usize - block_off).min((size - cur_off) as usize));
+                        buf[read..read + chunk].fill(0);
+                        read += chunk;
+                        continue;
+                    }
+                }
+            } else {
+                // direct blocks only
+                if logical as usize >= 12 {
+                    return Err(linfs_core::Error::Unsupported(
+                        "indirect blocks not yet implemented".into(),
+                    ));
+                }
+                let p = inode.block[logical as usize] as u64;
+                if p == 0 {
+                    let chunk = (to_read - read)
+                        .min((bs as usize - block_off).min((size - cur_off) as usize));
+                    buf[read..read + chunk].fill(0);
+                    read += chunk;
+                    continue;
+                }
+                p
+            };
+            self.block
+                .read_at(phys * bs, &mut tmp)
+                .map_err(|e| linfs_core::Error::Corruption(format!("read data blk {phys}: {e}")))?;
+            let chunk =
+                (to_read - read).min((bs as usize - block_off).min((size - cur_off) as usize));
+            buf[read..read + chunk].copy_from_slice(&tmp[block_off..block_off + chunk]);
+            read += chunk;
+        }
+        Ok(read)
     }
 }

@@ -11,6 +11,7 @@ pub struct Superblock {
 }
 
 pub struct F2fsFs {
+    #[allow(dead_code)]
     block: Arc<dyn Block>,
     sb: Superblock,
 }

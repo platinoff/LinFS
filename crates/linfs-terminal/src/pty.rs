@@ -33,10 +33,7 @@ impl Pty {
             cmd.creation_flags(CREATE_NO_WINDOW);
         }
         let mut child = cmd.spawn().map_err(|e| {
-            linfs_core::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("spawn {shell}: {e}"),
-            ))
+            linfs_core::Error::Io(std::io::Error::other(format!("spawn {shell}: {e}")))
         })?;
         let stdout = child
             .stdout
@@ -117,7 +114,7 @@ mod tests {
     use super::*;
     #[test]
     fn pty_echo() {
-        let shell = if cfg!(windows) { "echo hi" } else { "echo hi" };
+        let shell = "echo hi";
         let mut pty = Pty::spawn(shell, 80, 24).expect("spawn");
         let out = pty.read_timeout(Duration::from_secs(2)).expect("read");
         assert!(out.contains("hi"), "expected hi in {out:?}");

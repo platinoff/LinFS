@@ -32,9 +32,9 @@ pub fn read_group_descs(
     let gdt_off = gdt_block * block_size;
 
     // Number of groups = ceil(blocks_count / blocks_per_group)
-    let groups = (sb.blocks_count + sb.blocks_per_group as u64 - 1) / sb.blocks_per_group as u64;
+    let groups = sb.blocks_count.div_ceil(sb.blocks_per_group as u64);
     // For our synthetic 8MiB with 4096 block_size: 2048 blocks /8192 → 1 group
-    let groups = groups.max(1).min(128) as usize; // cap for test
+    let groups = groups.clamp(1, 128) as usize; // cap for test
 
     let desc_size: usize = if sb.feature_incompat & 0x80 != 0 {
         64
@@ -82,7 +82,6 @@ mod tests {
     use super::*;
     use crate::ext4::superblock::Superblock;
     use linfs_core::block::Block;
-    use std::sync::Arc;
 
     struct MemBlock {
         data: Vec<u8>,

@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 pub struct WinDevice {
     #[cfg(windows)]
+    #[allow(dead_code)]
     handle: std::os::windows::io::OwnedHandle,
     len: u64,
     sector: u32,
@@ -20,16 +21,10 @@ impl WinDevice {
 
 impl Block for WinDevice {
     fn read_at(&self, _off: u64, _buf: &mut [u8]) -> std::io::Result<()> {
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "not implemented",
-        ))
+        Err(std::io::Error::other("not implemented"))
     }
     fn write_at(&self, _off: u64, _buf: &[u8]) -> std::io::Result<()> {
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "not implemented",
-        ))
+        Err(std::io::Error::other("not implemented"))
     }
     fn len(&self) -> u64 {
         self.len

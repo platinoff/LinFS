@@ -52,9 +52,9 @@ pub fn parse_inode(buf: &[u8], inode_size: u16) -> linfs_core::Result<Inode> {
     let blocks_lo = u32::from_le_bytes([buf[28], buf[29], buf[30], buf[31]]);
     let flags = u32::from_le_bytes([buf[32], buf[33], buf[34], buf[35]]);
     let mut block = [0u32; 15];
-    for i in 0..15 {
+    for (i, slot) in block.iter_mut().enumerate() {
         let off = 40 + i * 4;
-        block[i] = u32::from_le_bytes([buf[off], buf[off + 1], buf[off + 2], buf[off + 3]]);
+        *slot = u32::from_le_bytes([buf[off], buf[off + 1], buf[off + 2], buf[off + 3]]);
     }
     let generation = u32::from_le_bytes([buf[100], buf[101], buf[102], buf[103]]);
     let file_acl_lo = u32::from_le_bytes([buf[104], buf[105], buf[106], buf[107]]);
@@ -78,7 +78,7 @@ pub fn parse_inode(buf: &[u8], inode_size: u16) -> linfs_core::Result<Inode> {
         block,
         generation,
         file_acl_lo,
-        size_high: size_high,
+        size_high,
     })
 }
 
