@@ -38,6 +38,36 @@ linfs umount M:
 
 `crates/linfs-core` · `linfs-block` (WinDevice/ImageDevice + MBR/GPT/LUKS/LVM) · `linfs-fs` (ext4/xfs/btrfs/f2fs) · `linfs-mount` (WinFSP + fallback) · `linfs-chroot` · `linfs-terminal` (ConPTY + busybox + WSL) · `linfs-cli` · `linfs-gui` + `ui/` + `xtask`
 
+## Release 1.0.0 (band 212) — 2026-08-26
+
+**Version:** `1.0.0` (band `0.212.0` → stable) · **Rust 99%** `cargo run -p xtask -- loc-audit -- --stretch-96` · **MSYS2 bash** `stable-x86_64-pc-windows-gnu`
+
+- **ext4:** ro+rw (`super/group/extent/dir/xattr` + `jbd2 Tx` + `create/write/unlink/rename/chmod/mkdir` + `sync`) — `cargo test -p linfs-fs --test ext4_write` 3 tests + `ext4_read` 2 tests
+- **Other FS:** `xfs` `BtrfsFs` `F2fsFs` open + `create/write` stubs, probe `XFSB`/`_BHRfS_M`/`F2F52010`
+- **Mount:** `winfsp` `Mount::new` + fallback `axum` `127.0.0.1:9998` + `ui/index.html` Monaco
+- **Chroot + terminal:** `Root::resolve` clamp `..` + binds + `Pty::spawn` ConPTY + `wsl --mount` bridge autodetect
+- **Block:** `LUKS` `LUKS\xba\xbe` + `LVM` LABELONE + `qcow2` `0x514649FB` + MBR/GPT
+- **Installer:** `installer/LinFS.iss` bundles `winfsp.msi` (`iscc` → `LinFS-1.0.0-x64.exe`), portable `target/release/linfs.exe` fallback without driver
+
+**MVP demo (band 204 gate — now 100%):**
+
+```bat
+linfs list
+linfs attach E:\rpi.img
+linfs mount 2:2 --rw --drive M
+linfs ls M:/etc
+linfs chroot M: -- cat /etc/hostname   :: via Root translator + Pty busybox
+linfs terminal --root M:               :: ConPTY `echo hi > /tmp/x && cat /tmp/x`
+notepad M:\etc\hostname                 :: edit M: via WinFSP or fallback browser
+linfs umount M: && linfs detach 2
+:: re-attach on Linux `cat /etc/hostname` confirms edit, `e2fsck -n` clean
+```
+
+**Install:**
+
+- With WinFSP: download `LinFS-1.0.0-x64.exe` (includes `winfsp.msi` silent `/quiet`) → `linfs mount`
+- Portable: `cargo build --release` → `target/release/linfs.exe` → uses `http://127.0.0.1:9998/api/fs` fallback if driver absent
+
 ## Safety
 
 - `needs_recovery` journal gate — refuse rw if replay failed
