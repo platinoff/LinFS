@@ -11,6 +11,9 @@ path = "src/main.rs"
 [dependencies]
 linfs-core.workspace = true
 linfs-block.workspace = true
+linfs-fs.workspace = true
+linfs-chroot.workspace = true
+linfs-terminal.workspace = true
 clap.workspace = true
 anyhow.workspace = true
 tokio.workspace = true

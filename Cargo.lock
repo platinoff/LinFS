@@ -185,7 +185,10 @@ dependencies = [
  "anyhow",
  "clap",
  "linfs-block",
+ "linfs-chroot",
  "linfs-core",
+ "linfs-fs",
+ "linfs-terminal",
  "tokio",
 ]
 
