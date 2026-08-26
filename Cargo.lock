@@ -413,8 +413,17 @@ name = "linfs-gui"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "axum",
+ "linfs-block",
+ "linfs-chroot",
  "linfs-core",
+ "linfs-fs",
+ "linfs-mount",
+ "linfs-terminal",
+ "serde",
+ "serde_json",
  "tokio",
+ "tower-http",
 ]
 
 [[package]]

@@ -1,4 +1,72 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>LinFS</title><link rel="stylesheet" href="style.css"></head>
-<body><h1>LinFS — Linux FS on Windows</h1><div id="tree"></div><div id="term"></div><script src="app.js"></script></body>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinFS — Perfect GUI</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+<header class="hdr">
+  <div class="logo"><span class="dot">●</span> LinFS <small>1.0 — Linux FS on Windows</small></div>
+  <div class="hdr-mid">
+    <select id="mountSel"><option>Demo ext4 (in-mem)</option></select>
+    <button id="attachBtn">Attach .img</button>
+    <button id="refreshBtn">⟳ Refresh</button>
+  </div>
+  <div class="hdr-right">
+    <input id="search" placeholder="Ctrl+K search…" spellcheck="false">
+    <button id="themeBtn">◐</button>
+  </div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-title">Devices</div>
+    <div id="devices"></div>
+    <div class="sb-title">Places</div>
+    <div class="tree" id="tree"></div>
+    <div class="sb-title">Info</div>
+    <div id="infoBox" class="info">Select a file</div>
+  </aside>
+  <main class="main">
+    <nav class="breadcrumb" id="breadcrumb"><span>/</span></nav>
+    <div class="toolbar">
+      <button id="newFileBtn">+ File</button>
+      <button id="newFolderBtn">+ Folder</button>
+      <button id="uploadBtn">↑ Upload</button>
+      <input type="file" id="fileInput" hidden multiple>
+      <button id="downloadBtn">↓ Download</button>
+      <span class="spacer"></span>
+      <span id="status">Ready — ext4 ro+rw • journal OK • 127.0.0.1:9998</span>
+    </div>
+    <div class="table-wrap">
+      <table class="filetable" id="fileTable">
+        <thead><tr><th>Name</th><th>Size</th><th>Perms</th><th>Owner</th><th>Mtime</th><th></th></tr></thead>
+        <tbody id="fileBody"></tbody>
+      </table>
+      <div id="empty" class="empty">Empty folder</div>
+    </div>
+    <section class="term-pane">
+      <div class="term-hdr">Terminal — chroot / <button id="termClear">Clear</button> <span id="termStatus">busybox sh</span></div>
+      <div id="term" class="term"></div>
+      <div class="term-input"><span>&gt;</span><input id="termInput" placeholder="cat /etc/hostname, ls -l, echo hi > /tmp/x"></div>
+    </section>
+  </main>
+</div>
+<!-- Modals -->
+<div id="editorModal" class="modal hidden">
+  <div class="modal-card editor-card">
+    <div class="modal-hdr"><span id="editorPath">/etc/hostname</span><span class="spacer"></span><button id="editorHexToggle">Hex</button><button id="editorSave" class="primary">Save Ctrl+S</button><button id="editorClose">✕</button></div>
+    <div id="editor" class="editor"></div>
+    <div id="hexView" class="hex hidden"></div>
+  </div>
+</div>
+<div id="permModal" class="modal hidden">
+  <div class="modal-card"><h3>Permissions</h3><div id="permPath"></div><input id="permInput" placeholder="0644"><button id="permSave" class="primary">chmod</button><button id="permCancel">Cancel</button></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script src="app.js" type="module"></script>
+</body>
 </html>
