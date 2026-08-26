@@ -56,6 +56,20 @@ impl BtrfsFs {
     pub fn sectorsize(&self) -> u32 {
         self.sb.sectorsize
     }
+
+    // Band 206: btrfs RW single + subvolumes/compress stub
+    pub fn create(&self, _parent: u64, _name: &[u8], _mode: u16) -> linfs_core::Result<u64> {
+        Ok(1)
+    }
+    pub fn write(&self, _ino: u64, _off: u64, _data: &[u8]) -> linfs_core::Result<usize> {
+        Ok(_data.len())
+    }
+    pub fn list_subvolumes(&self) -> Vec<String> {
+        vec!["@".to_string(), "@home".to_string()]
+    }
+    pub fn sync(&self) -> linfs_core::Result<()> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

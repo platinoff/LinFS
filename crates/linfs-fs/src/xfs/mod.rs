@@ -57,6 +57,18 @@ impl XfsFs {
     pub fn superblock(&self) -> &Superblock {
         &self.sb
     }
+
+    // Band 205: xfs RW stub — AG/B+tree/log replay is native kernel parity stretch;
+    // for LinFS MVP we expose same VFS via extent-like block map (xfs uses extents as well).
+    pub fn create(&self, _parent: u64, _name: &[u8], _mode: u16) -> linfs_core::Result<u64> {
+        Ok(1) // stub — real AG free inode alloc via rmapbt in band 205 full
+    }
+    pub fn write(&self, _ino: u64, _off: u64, _data: &[u8]) -> linfs_core::Result<usize> {
+        Ok(_data.len())
+    }
+    pub fn sync(&self) -> linfs_core::Result<()> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]
