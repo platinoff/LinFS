@@ -7,11 +7,29 @@ pub mod journal;
 pub mod superblock;
 pub mod xattr;
 
-pub struct Fs;
+use std::sync::Arc;
+
+use linfs_core::block::Block;
+
+pub struct Fs {
+    block: Arc<dyn Block>,
+    superblock: superblock::Superblock,
+}
+
 impl Fs {
-    pub fn open(_block: std::sync::Arc<dyn linfs_core::block::Block>) -> linfs_core::Result<Self> {
-        Err(linfs_core::Error::Unsupported(
-            "ext4 open not yet implemented (band 201)".into(),
-        ))
+    pub fn open(block: Arc<dyn Block>) -> linfs_core::Result<Self> {
+        let sb = superblock::Superblock::read(&*block)?;
+        Ok(Self {
+            block,
+            superblock: sb,
+        })
+    }
+
+    pub fn block_size(&self) -> u32 {
+        self.superblock.block_size
+    }
+
+    pub fn superblock(&self) -> &superblock::Superblock {
+        &self.superblock
     }
 }
