@@ -145,7 +145,7 @@ fn make_demo_image() -> Vec<u8> {
     data[et13 + 2..et13 + 4].copy_from_slice(&1u16.to_le_bytes());
     let ino14_off = itable + 13 * 256;
     data[ino14_off..ino14_off + 2].copy_from_slice(&0x81A4u16.to_le_bytes());
-    data[ino14_off + 4..ino14_off + 8].copy_from_slice(&11u32.to_le_bytes());
+    data[ino14_off + 4..ino14_off + 8].copy_from_slice(&10u32.to_le_bytes());
     data[ino14_off + 32..ino14_off + 36].copy_from_slice(&0x80000u32.to_le_bytes());
     let et14 = ino14_off + 40;
     data[et14..et14 + 2].copy_from_slice(&0xF30Au16.to_le_bytes());
@@ -154,7 +154,7 @@ fn make_demo_image() -> Vec<u8> {
     data[et14 + 12..et14 + 16].copy_from_slice(&0u32.to_le_bytes());
     data[et14 + 16..et14 + 18].copy_from_slice(&1u16.to_le_bytes());
     data[et14 + 20..et14 + 24].copy_from_slice(&13u32.to_le_bytes());
-    data[13 * 4096..13 * 4096 + 11].copy_from_slice(b"hello gui\n");
+    data[13 * 4096..13 * 4096 + 10].copy_from_slice(b"hello gui\n");
     data
 }
 
