@@ -14,6 +14,7 @@ use linfs_core::block::Block;
 pub struct Fs {
     block: Arc<dyn Block>,
     superblock: superblock::Superblock,
+    journal: journal::Journal,
 }
 
 impl Fs {
@@ -21,9 +22,21 @@ impl Fs {
         let sb = superblock::Superblock::read(&*block)?;
         // Validate GDT readable at this block_size
         let _gdt = group::read_group_descs(&*block, &sb)?;
+        // Read raw s_state from superblock buffer (offset 58)
+        let mut s_state_buf = [0u8; 2];
+        {
+            let mut hdr = [0u8; 1024];
+            block
+                .read_at(1024, &mut hdr)
+                .map_err(|e| linfs_core::Error::Corruption(format!("read s_state: {e}")))?;
+            s_state_buf.copy_from_slice(&hdr[58..60]);
+        }
+        let s_state = u16::from_le_bytes(s_state_buf);
+        let journal = journal::Journal::replay_if_needed(&*block, &sb, s_state)?;
         Ok(Self {
             block,
             superblock: sb,
+            journal,
         })
     }
 
@@ -33,6 +46,15 @@ impl Fs {
 
     pub fn superblock(&self) -> &superblock::Superblock {
         &self.superblock
+    }
+
+    pub fn needs_recovery_replayed(&self) -> bool {
+        self.journal.replayed
+    }
+
+    pub fn sync(&self) -> linfs_core::Result<()> {
+        // MVP: no-op — real impl checkpoints journal and clears needs_recovery
+        Ok(())
     }
 
     fn read_inode_raw(&self, ino: u32) -> linfs_core::Result<inode::Inode> {
