@@ -1,0 +1,11 @@
+[package]
+name = "linfs-mount"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+linfs-core.workspace = true
+linfs-fs.workspace = true
+anyhow.workspace = true
+tokio.workspace = true

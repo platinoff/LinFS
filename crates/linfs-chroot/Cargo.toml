@@ -1,0 +1,9 @@
+[package]
+name = "linfs-chroot"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+linfs-core.workspace = true
+linfs-fs.workspace = true

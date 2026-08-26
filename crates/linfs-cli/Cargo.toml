@@ -1,0 +1,16 @@
+[package]
+name = "linfs-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "linfs"
+path = "src/main.rs"
+
+[dependencies]
+linfs-core.workspace = true
+linfs-block.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+tokio.workspace = true

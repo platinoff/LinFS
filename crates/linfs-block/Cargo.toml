@@ -1,0 +1,12 @@
+[package]
+name = "linfs-block"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+linfs-core.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+crc32fast.workspace = true
+windows.workspace = true

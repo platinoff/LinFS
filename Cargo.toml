@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["crates/linfs-core", "crates/linfs-block", "crates/linfs-fs", "crates/linfs-mount", "crates/linfs-chroot", "crates/linfs-terminal", "crates/linfs-cli", "crates/linfs-gui", "xtask"]
+
+[workspace.package]
+edition = "2021"
+version = "0.200.0"
+license = "MIT"
+repository = "https://github.com/platinoff/LinFS"
+keywords = ["filesystem", "ext4", "btrfs", "windows", "chroot"]
+description = "LinFS — 100% Rust Windows toolkit to mount and mutate Linux filesystems (ext4/xfs/btrfs/f2fs) with chroot + Linux terminal"
+
+[workspace.dependencies]
+linfs-core = { path = "crates/linfs-core" }
+linfs-block = { path = "crates/linfs-block" }
+linfs-fs = { path = "crates/linfs-fs" }
+linfs-mount = { path = "crates/linfs-mount" }
+linfs-chroot = { path = "crates/linfs-chroot" }
+linfs-terminal = { path = "crates/linfs-terminal" }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "2"
+clap = { version = "4", features = ["derive"] }
+windows = { version = "0.58", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Console", "Win32_Security"] }
+crc32fast = "1"

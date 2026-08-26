@@ -1,0 +1,9 @@
+/target
+/data/*
+!/data/.gitkeep
+.env
+.env.*
+*.pem
+*.key
+linfs-*.msi
+LinFS-*.exe
