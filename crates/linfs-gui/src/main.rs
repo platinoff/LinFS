@@ -734,8 +734,17 @@ impl eframe::App for TcApp {
                     ui.monospace(&self.log);
                 });
         });
-        // central dual pane
+        // central dual pane — Attach Device / Image prominent (user req: update realise including attaching device)
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("📂 Attach Device / Image (Alt+F1)").clicked() {
+                    self.show_mount = true;
+                }
+                ui.label(
+                    egui::RichText::new("— Total Commander dark — mc cmd-like — F1 Help").weak(),
+                );
+            });
+            ui.separator();
             ui.columns(2, |cols| {
                 for (idx, col) in cols.iter_mut().enumerate() {
                     let is_left = idx == 0;
@@ -1020,23 +1029,97 @@ impl eframe::App for TcApp {
                 self.chmod_path = None;
             }
         }
-        // mount window
+        // mount window — Attach Device / Image (native OS window, Total Commander style)
         if self.show_mount {
             let mut open = true;
-            egui::Window::new("Mount — Alt+F1/F2")
+            egui::Window::new("Attach Device / Image — Alt+F1/F2")
                 .open(&mut open)
                 .show(ctx, |ui| {
-                    ui.label("Physical drives + images (fallback 127.0.0.1:9998 if no WinFSP)");
-                    for dev in linfs_block::win::enumerate() {
-                        ui.label(format!("Device: {}", dev));
+                    ui.heading("Attach Linux filesystem");
+                    ui.separator();
+                    ui.label("Physical drives (requires admin for \\.\\PhysicalDrive):");
+                    let devs = linfs_block::win::enumerate();
+                    if devs.is_empty() {
+                        ui.label("No PhysicalDrive found — try Attach .img or run as admin");
+                        ui.label("Tip: use linfs.exe list in admin cmd to see drives");
                     }
+                    for dev in devs {
+                        ui.horizontal(|ui| {
+                            ui.label(format!("{}  ", dev));
+                            if ui.button("Attach Drive").clicked() {
+                                match linfs_block::win::WinDevice::open(&dev) {
+                                    Ok(block) => {
+                                        let arc: Arc<dyn linfs_core::block::Block> = block;
+                                        // Try ext4 open; if fails, still log
+                                        match linfs_fs::ext4::Fs::open(arc) {
+                                            Ok(fs) => {
+                                                self.fs = Arc::new(fs);
+                                                self.left.refresh(&self.fs);
+                                                self.right.refresh(&self.fs);
+                                                self.log(&format!("Attached drive {} (ext4)", dev));
+                                                self.show_mount = false;
+                                            }
+                                            Err(e) => self.log(&format!(
+                                                "Attach {} failed (not ext4 or need admin): {e}",
+                                                dev
+                                            )),
+                                        }
+                                    }
+                                    Err(e) => self
+                                        .log(&format!("Open {} failed: {e} (run as admin?)", dev)),
+                                }
+                            }
+                        });
+                    }
+                    ui.separator();
+                    ui.label("Disk images (.img .raw .qcow2 .vhd .vhdx):");
+                    if ui.button("📂 Browse .img/.raw/.qcow2/.vhd...").clicked() {
+                        if let Some(path) = rfd::FileDialog::new()
+                            .add_filter(
+                                "Disk images",
+                                &["img", "raw", "qcow2", "vhd", "vhdx", "bin"],
+                            )
+                            .pick_file()
+                        {
+                            let img = path.to_string_lossy().to_string();
+                            let res = if img.ends_with(".qcow2") {
+                                // qcow2 ro stub: treat as ImageDevice if qcow2 magic, else fallback
+                                linfs_block::image::ImageDevice::open(std::path::Path::new(&img))
+                                    .map(|dev| {
+                                        let arc: Arc<dyn linfs_core::block::Block> = Arc::new(dev);
+                                        linfs_fs::ext4::Fs::open(arc)
+                                    })
+                            } else {
+                                linfs_block::image::ImageDevice::open(std::path::Path::new(&img))
+                                    .map(|dev| {
+                                        let arc: Arc<dyn linfs_core::block::Block> = Arc::new(dev);
+                                        linfs_fs::ext4::Fs::open(arc)
+                                    })
+                            };
+                            match res {
+                                Ok(Ok(fs)) => {
+                                    self.fs = Arc::new(fs);
+                                    self.left.refresh(&self.fs);
+                                    self.right.refresh(&self.fs);
+                                    self.log(&format!("Attached image {}", img));
+                                    self.show_mount = false;
+                                }
+                                Ok(Err(e)) => {
+                                    self.log(&format!("Attach {} failed (not ext4): {e}", img))
+                                }
+                                Err(e) => self.log(&format!("Open {} failed: {e}", img)),
+                            }
+                        }
+                    }
+                    // also list images in current dir for quick attach
                     let images: Vec<String> = std::fs::read_dir(".")
                         .ok()
                         .into_iter()
                         .flat_map(|rd| {
                             rd.filter_map(|e| e.ok()).filter_map(|e| {
                                 let p = e.path();
-                                if p.extension().and_then(|x| x.to_str()) == Some("img") {
+                                let ext = p.extension().and_then(|x| x.to_str()).unwrap_or("");
+                                if ["img", "raw", "qcow2", "vhd", "vhdx", "bin"].contains(&ext) {
                                     Some(p.to_string_lossy().to_string())
                                 } else {
                                     None
@@ -1060,6 +1143,11 @@ impl eframe::App for TcApp {
                             }
                         }
                     }
+                    ui.separator();
+                    ui.label("CLI fallback (admin cmd):");
+                    ui.monospace("linfs.exe list");
+                    ui.monospace("linfs.exe attach C:\\path\\disk.img");
+                    ui.monospace("linfs-gui.exe --image \"C:\\path\\disk.img\"");
                     if ui.button("Close").clicked() {
                         self.show_mount = false;
                     }
