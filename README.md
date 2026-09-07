@@ -1,3 +1,14 @@
+<p align="center">
+  <img src="docs/assets/presentations/linfs-hero.svg" alt="LinFS — Linux Filesystems on Windows, 100% Rust." width="100%">
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-yellow.svg" alt="MIT"></a>
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-95%E2%80%93100%25-orange?logo=rust" alt="Rust 95–100%"></a>
+  <a href="https://github.com/sponsors/platinoff"><img src="https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=github-sponsors" alt="Sponsor"></a>
+  <img src="https://img.shields.io/badge/live_UI-127.0.0.1%3A9998-22d3ee" alt="Live UI port 9998">
+</p>
+
 # LinFS — Linux Filesystems on Windows, 100% Rust
 
 > Attach any Linux FS (`ext4`/`xfs`/`btrfs`/`f2fs`) from a physical disk or `.img` on Windows, browse and **mutate** it, `chroot` into it, and run a Linux terminal — without WSL kernel, without Python/Java.
@@ -67,6 +78,24 @@ linfs umount M: && linfs detach 2
 
 - With WinFSP: download `LinFS-1.0.0-x64.exe` (includes `winfsp.msi` silent `/quiet`) → `linfs mount`
 - Portable: `cargo build --release` → `target/release/linfs.exe` → uses `http://127.0.0.1:9998/api/fs` fallback if driver absent
+
+## ❤️ Support / Donate
+
+LinFS is MIT and maintained in the open. If the tool saves you a session, here is how to keep it independent — pick whatever fits.
+
+<p align="center">
+  <a href="https://github.com/platinoff/LinFS/stargazers"><img src="https://img.shields.io/badge/⭐_Star_the_repo-black?style=for-the-badge" alt="Star"></a>
+  <a href="https://github.com/sponsors/platinoff"><img src="https://img.shields.io/badge/GitHub_Sponsors-ea4aaa?style=for-the-badge&logo=github-sponsors&logoColor=white" alt="GitHub Sponsors"></a>
+</p>
+
+| | |
+|---|---|
+| ⭐ **Star** | Free, and it actually helps people find the repo |
+| 🐙 **[GitHub Sponsors](https://github.com/sponsors/platinoff)** | One-off or monthly · [github.com/sponsors/platinoff](https://github.com/sponsors/platinoff) |
+| 💰 **Solana (SOL)** | `GcdgNtdE8NEk3z9sQ5jXv2tqguZjSYqPqNAtjsjPNJx8` |
+| 🐛 **Issues** | Bugs and ideas: [github.com/platinoff/LinFS/issues](https://github.com/platinoff/LinFS/issues) |
+
+---
 
 ## Safety
 
