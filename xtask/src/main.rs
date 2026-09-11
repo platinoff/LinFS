@@ -15,7 +15,7 @@ fn loc_audit() -> anyhow::Result<()> {
     // Count Rust lines vs total (simplified)
     let rs = count_lines("crates", ".rs") + count_lines("xtask", ".rs") + count_lines("src", ".rs");
     let total = rs + count_lines("ui", ".js") + count_lines("ui", ".html");
-    let pct = if total == 0 { 100 } else { rs * 100 / total };
+    let pct = (rs * 100).checked_div(total).unwrap_or(100);
     println!("loc-audit: Rust {rs} / total {total} = {pct}%");
     let stretch = std::env::args().any(|a| a == "--stretch-96");
     if stretch && pct < 96 {
